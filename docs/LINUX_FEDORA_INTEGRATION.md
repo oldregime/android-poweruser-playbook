@@ -26,3 +26,17 @@ scrcpy --max-fps=120 --video-codec=h265 --audio-codec=opus --stay-awake
 # 4K Camera Web-Camera Forwarding
 scrcpy --video-source=camera --camera-size=1920x1080 --camera-fps=60
 ```
+
+---
+
+## 🤖 7. Antigravity (AGY) & Claude MCP Phone Bridge (`rish-mcp`)
+
+The **`rish-mcp`** integration exposes the Realme P3 Ultra's elevated Shizuku shell directly to AI agents (Antigravity AGY CLI & Claude Code) as native MCP tools.
+
+### Architecture Topology:
+* **Relay Server Container:** `localhost/rish-mcp-relay:latest` running via Podman on `0.0.0.0:8080`.
+* **Local Bridge Script:** `/home/dj/.gemini/config/rish_mcp_bridge.py`.
+* **Global MCP Config:** `/home/dj/.gemini/config/mcp_config.json`.
+* **Available MCP Tools:**
+  * `run_shell(cmd)`: Run any elevated shell command on the phone as UID 2000 (`adb shell`).
+  * `list_devices()`: List active connected phones/tablets.
