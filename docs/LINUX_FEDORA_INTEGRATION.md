@@ -40,3 +40,15 @@ The **`rish-mcp`** integration exposes the Realme P3 Ultra's elevated Shizuku sh
 * **Available MCP Tools:**
   * `run_shell(cmd)`: Run any elevated shell command on the phone as UID 2000 (`adb shell`).
   * `list_devices()`: List active connected phones/tablets.
+
+---
+
+## ☁️ 8. Oracle Cloud Always-Free 24/7/365 Deployment
+
+The `rish-mcp` relay server is permanently deployed on the **Oracle Cloud Always Free VM** (`immich-amd-vnic`):
+
+* **Oracle VM Tailscale IP:** `100.119.62.87` (Port `8080`)
+* **Security Model:**
+  * Zero open inbound public ports on the Internet.
+  * Encrypted WireGuard mesh communication via Tailscale between Oracle Cloud, your phone, and your laptop.
+  * Your laptop runs **0 background services**, uses **0 CPU/battery**, and can be asleep or offline while your phone stays connected to the AI cloud relay.
