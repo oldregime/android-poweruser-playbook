@@ -155,7 +155,9 @@ NPCI and Indian banking applications (PhonePe, GPay, Paytm, BHIM, Cred, SBI YONO
     ├── NETWORK_DNS_AND_WIFI_OPTIMIZATION.md          # DNS, Latency & Wi-Fi Steering Guide
     ├── CURATED_FOSS_APPS_ECOSYSTEM.md                # Power-User FOSS App Catalog
     ├── BATTERY_AND_DOZE_TUNING.md                    # Doze State Machine & Chemistry Analysis
-    └── LINUX_FEDORA_INTEGRATION.md                   # KDE Connect, Scrcpy & Tailscale Guide
+    ├── LINUX_FEDORA_INTEGRATION.md                   # KDE Connect, Scrcpy & Tailscale Guide
+    ├── SHIZUKU_AND_RISH_AUTOMATION.md                # Rootless Binder IPC & Terminal Scripting
+    └── LOW_RAM_ZRAM_GOVERNOR_TUNING.md               # zRAM, Swappiness & LMK Tuning Guide
 ```
 
 ---
