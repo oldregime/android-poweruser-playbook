@@ -207,3 +207,17 @@ adb shell "settings put secure lockscreen_allow_trivial_controls 1"
 | **Slow domain lookup / app lag** | Slow AdGuard DNS | `adb shell "settings put global private_dns_mode hostname && settings put global private_dns_specifier one.one.one.one"` |
 | **Shizuku / Termux background killed** | Phantom process killer | `adb shell "device_config put activity_manager max_phantom_processes 2147483647"` |
 | **RVX asks for Premium in car** | Android Auto media check | Enable Developer Mode + Unknown Sources in Android Auto; set RVX spoof to `visionOS`. |
+
+---
+
+## 🗄️ 9. Encrypted Portable Linux Storage Drive (SSHFS)
+Mounts phone internal storage (`/sdcard`) natively on Fedora via Termux OpenSSH (`port 8022`):
+```bash
+# Mount phone storage (auto-detects Wi-Fi or Tailscale)
+~/mount_realme_phone.sh
+
+# Unmount
+~/unmount_realme_phone.sh
+```
+* Mount point: `~/phone_storage`
+* Access: Full native file manager drag-and-drop, 4K media playback, and zero-friction backup.
