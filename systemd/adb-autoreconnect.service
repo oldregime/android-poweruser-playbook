@@ -1,0 +1,14 @@
+[Unit]
+Description=24/7 Always-On Wireless ADB Auto-Reconnect Service
+After=network.target network-online.target
+
+[Service]
+Type=simple
+ExecStart=%h/bin/adb-autoreconnect.sh
+Restart=always
+RestartSec=3
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=default.target
