@@ -25,3 +25,15 @@ A battle-tested catalog of Free & Open-Source Android applications designed for 
 | **Markor** | `net.gsantner.markor` | Offline Markdown notes, Todo.txt, and fast text scratchpad. | [GitHub](https://github.com/gsantner/markor) |
 | **LocalSend** | `org.localsend.localsend_app` | Secure cross-platform local network file sharing. | [GitHub](https://github.com/localsend/localsend) |
 | **Seal** | `com.deniscerri.ytdl` | yt-dlp based universal media downloader. | [GitHub](https://github.com/JunkFood02/Seal) |
+
+---
+
+## 📡 12. Hardware Infrared (IR) Blaster Control
+
+### **IR Blaster Remote (`org.nslabs.ir_blaster`)**
+* **Source:** [GitHub (iodn/android-ir-blaster)](https://github.com/iodn/android-ir-blaster) / F-Droid
+* **Why it's superior to Stock Realme IR Remote:**
+  1. **Universal Protocol Support:** Direct support for **Flipper Zero `.ir` files**, **IRPLUS XML (`.irplus`)**, and **LIRC (`.conf`)** code databases.
+  2. **Signal Brute-Forcer / Tester:** Cycles through power, volume, and AC temperature codes to automatically identify frequencies for unlisted, obscure, or custom appliances.
+  3. **Custom Pronto Hex:** Paste raw Pronto Hex codes directly for any custom device.
+  4. **Material 3 UI:** Zero ads, zero telemetry, zero analytics, completely offline.
