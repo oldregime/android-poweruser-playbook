@@ -119,8 +119,6 @@ adb shell "settings put global wifi_scan_throttle_enabled 0"
 
 ### Wi-Fi 5GHz Band Steering (Prioritize `Lnjoshijio_5G`)
 ```bash
-adb shell "cmd wifi add-suggestion Lnjoshijio4g wpa2 Divyansh@2008 -d -s"  # -d = autojoin disabled
-adb shell "cmd wifi add-suggestion Lnjoshijio_5G wpa2 Divyansh@2008 -s"   # Prioritized 390-433 Mbps
 ```
 *Note for user:* In phone Wi-Fi settings for `Lnjoshijio_5G`, set Privacy to **"Use device MAC"** to prevent router-side DHCP lease churn.
 
