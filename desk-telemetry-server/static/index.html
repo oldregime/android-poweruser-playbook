@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Desk Ambient Telemetry</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+    
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #000000;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+    }
+
+    .glass-card-glow-cyan {
+      box-shadow: 0 0 20px -5px rgba(6, 182, 212, 0.15);
+    }
+
+    .glass-card-glow-green {
+      box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.15);
+    }
+
+    .glass-card-glow-purple {
+      box-shadow: 0 0 20px -5px rgba(168, 85, 247, 0.15);
+    }
+
+    /* Progress bar transitions */
+    .bar-fill {
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Button active tactile feedback */
+    .btn-action:active {
+      transform: scale(0.94);
+    }
+
+    /* Anti-burn-in container */
+    #burn-in-container {
+      transition: transform 1.5s ease-in-out;
+    }
+
+    /* Night Mode Theme */
+    body.night-mode {
+      background-color: #000000 !important;
+    }
+    body.night-mode .glass-card {
+      background: rgba(5, 5, 5, 0.95) !important;
+      border-color: rgba(245, 158, 11, 0.1) !important;
+    }
+    body.night-mode .text-cyan-400, 
+    body.night-mode .text-emerald-400,
+    body.night-mode .text-purple-400 {
+      color: #d97706 !important;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen p-3 md:p-5 flex flex-col justify-between select-none">
+
+  <!-- Anti-Burn-In Shifting Container -->
+  <div id="burn-in-container" class="h-full w-full flex flex-col justify-between">
+
+    <!-- 1. TOP HEADER: Clock, Date & Weather -->
+    <header class="flex flex-col md:flex-row items-center justify-between gap-3 pb-2 border-b border-zinc-900">
+      
+      <!-- Time & Date -->
+      <div class="flex items-center gap-4">
+        <div class="flex flex-col">
+          <div id="clock-display" class="font-mono text-4xl md:text-5xl font-extrabold tracking-tight text-white flex items-baseline">
+            00:00<span class="text-xs md:text-sm font-normal text-cyan-400 ml-1.5" id="clock-seconds">00</span>
+          </div>
+          <div id="date-display" class="text-xs md:text-sm font-medium text-zinc-400 uppercase tracking-widest mt-0.5">
+            Loading Date...
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Weather Widget -->
+      <div class="flex items-center gap-3 glass-card px-4 py-2 rounded-2xl">
+        <i id="weather-icon" class="fa-solid fa-cloud-sun text-2xl text-amber-400"></i>
+        <div class="flex flex-col text-right md:text-left">
+          <div class="flex items-baseline gap-1">
+            <span id="weather-temp" class="font-mono text-xl font-bold text-white">--°C</span>
+            <span id="weather-cond" class="text-xs text-zinc-400 font-medium">Fetching...</span>
+          </div>
+          <div class="text-[10px] text-zinc-500 font-mono" id="weather-details">
+            Humidity: --% • Wind: -- km/h
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Utilities: Fullscreen & Night Mode -->
+      <div class="flex items-center gap-2">
+        <button onclick="toggleNightMode()" class="btn-action p-2.5 rounded-xl glass-card text-zinc-400 hover:text-amber-400" title="Night Mode">
+          <i class="fa-solid fa-moon text-sm"></i>
+        </button>
+        <button onclick="toggleFullScreen()" class="btn-action p-2.5 rounded-xl glass-card text-zinc-400 hover:text-cyan-400" title="Fullscreen Kiosk">
+          <i class="fa-solid fa-expand text-sm"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- 2. MAIN TELEMETRY GRID -->
+    <main class="grid grid-cols-2 md:grid-cols-4 gap-3 my-auto py-2">
+
+      <!-- CPU Card -->
+      <div class="glass-card glass-card-glow-cyan p-3.5 rounded-2xl flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-microchip text-cyan-400 text-sm"></i>
+            <span class="text-xs font-bold uppercase tracking-wider text-zinc-300">AMD CPU</span>
+          </div>
+          <span id="cpu-temp" class="font-mono text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950/60 text-cyan-300 border border-cyan-800/40">--°C</span>
+        </div>
+        <div>
+          <div class="flex items-baseline justify-between mb-1">
+            <span id="cpu-usage" class="font-mono text-3xl font-extrabold text-white">0%</span>
+            <span id="cpu-freq" class="font-mono text-xs text-zinc-400">3.8 GHz</span>
+          </div>
+          <div class="w-full bg-zinc-900 rounded-full h-2 overflow-hidden">
+            <div id="cpu-bar" class="bar-fill bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full w-0"></div>
+          </div>
+          <div class="text-[10px] text-zinc-500 mt-1 truncate">Ryzen 7 7840HS (8C/16T)</div>
+        </div>
+      </div>
+
+      <!-- GPU Card -->
+      <div class="glass-card glass-card-glow-green p-3.5 rounded-2xl flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-gamepad text-emerald-400 text-sm"></i>
+            <span class="text-xs font-bold uppercase tracking-wider text-zinc-300">NVIDIA GPU</span>
+          </div>
+          <span id="gpu-temp" class="font-mono text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-300 border border-emerald-800/40">--°C</span>
+        </div>
+        <div>
+          <div class="flex items-baseline justify-between mb-1">
+            <span id="gpu-usage" class="font-mono text-3xl font-extrabold text-white">0%</span>
+            <span id="gpu-vram" class="font-mono text-xs text-zinc-400">0/6 GB</span>
+          </div>
+          <div class="w-full bg-zinc-900 rounded-full h-2 overflow-hidden">
+            <div id="gpu-bar" class="bar-fill bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full w-0"></div>
+          </div>
+          <div class="flex justify-between text-[10px] text-zinc-500 mt-1">
+            <span>RTX 4050 6GB</span>
+            <span id="gpu-power">0 W</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RAM & Memory Card -->
+      <div class="glass-card glass-card-glow-purple p-3.5 rounded-2xl flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-memory text-purple-400 text-sm"></i>
+            <span class="text-xs font-bold uppercase tracking-wider text-zinc-300">MEMORY</span>
+          </div>
+          <span id="ram-used" class="font-mono text-xs font-semibold text-purple-300">--/-- GB</span>
+        </div>
+        <div>
+          <div class="flex items-baseline justify-between mb-1">
+            <span id="ram-usage" class="font-mono text-3xl font-extrabold text-white">0%</span>
+            <span id="zram-info" class="font-mono text-[10px] text-zinc-400">ZRAM: OK</span>
+          </div>
+          <div class="w-full bg-zinc-900 rounded-full h-2 overflow-hidden">
+            <div id="ram-bar" class="bar-fill bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full w-0"></div>
+          </div>
+          <div class="text-[10px] text-zinc-500 mt-1 truncate">LPDDR5X + 14GB ZRAM</div>
+        </div>
+      </div>
+
+      <!-- Network Speed Card -->
+      <div class="glass-card p-3.5 rounded-2xl flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-network-wired text-amber-400 text-sm"></i>
+            <span class="text-xs font-bold uppercase tracking-wider text-zinc-300">NETWORK I/O</span>
+          </div>
+          <span class="text-[10px] font-mono text-emerald-400">● LIVE</span>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-1.5">
+              <i class="fa-solid fa-arrow-down text-emerald-400 text-xs"></i>
+              <span id="net-down" class="font-mono text-sm font-bold text-white">0 KB/s</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <i class="fa-solid fa-arrow-up text-cyan-400 text-xs"></i>
+              <span id="net-up" class="font-mono text-sm font-bold text-white">0 KB/s</span>
+            </div>
+          </div>
+          <div class="w-full bg-zinc-900 rounded-full h-2 overflow-hidden flex">
+            <div id="net-bar" class="bar-fill bg-gradient-to-r from-emerald-500 to-cyan-500 h-2 rounded-full w-2"></div>
+          </div>
+          <div class="text-[10px] text-zinc-500 mt-1 truncate">Gigabit LAN & Tailscale</div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- 3. HOMELAB SENTINEL NODES -->
+    <section class="glass-card p-2.5 rounded-2xl mb-2 flex items-center justify-between overflow-x-auto gap-3">
+      <div class="flex items-center gap-2 text-xs font-bold text-zinc-400 uppercase tracking-wider whitespace-nowrap pl-1">
+        <i class="fa-solid fa-server text-cyan-400"></i>
+        <span>Homelab Sentinel</span>
+      </div>
+      <div id="homelab-nodes" class="flex items-center gap-2 text-xs font-mono">
+        <span class="text-zinc-500 text-xs">Pinging Tailscale Nodes...</span>
+      </div>
+    </section>
+
+    <!-- 4. BOTTOM ACTION DOCK (PC Remote Macropad) -->
+    <footer class="grid grid-cols-5 gap-2 pt-1 border-t border-zinc-900">
+      
+      <!-- Mic Mute Button -->
+      <button id="btn-mic" onclick="triggerAction('mute_mic')" class="btn-action glass-card hover:bg-zinc-800/80 p-3 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all">
+        <i id="icon-mic" class="fa-solid fa-microphone text-emerald-400 text-lg"></i>
+        <span id="label-mic" class="text-[11px] font-bold text-zinc-300">Mic Active</span>
+      </button>
+
+      <!-- Volume Down -->
+      <button onclick="triggerAction('vol_down')" class="btn-action glass-card hover:bg-zinc-800/80 p-3 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all">
+        <i class="fa-solid fa-volume-low text-cyan-400 text-lg"></i>
+        <span class="text-[11px] font-bold text-zinc-300">Vol -</span>
+      </button>
+
+      <!-- Volume Up -->
+      <button onclick="triggerAction('vol_up')" class="btn-action glass-card hover:bg-zinc-800/80 p-3 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all">
+        <i class="fa-solid fa-volume-high text-cyan-400 text-lg"></i>
+        <span class="text-[11px] font-bold text-zinc-300">Vol +</span>
+      </button>
+
+      <!-- Play / Pause -->
+      <button onclick="triggerAction('play_pause')" class="btn-action glass-card hover:bg-zinc-800/80 p-3 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all">
+        <i class="fa-solid fa-play text-purple-400 text-lg"></i>
+        <span class="text-[11px] font-bold text-zinc-300">Media</span>
+      </button>
+
+      <!-- Lock PC -->
+      <button onclick="triggerAction('lock_pc')" class="btn-action glass-card hover:bg-red-950/40 p-3 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all border-red-900/30">
+        <i class="fa-solid fa-lock text-red-400 text-lg"></i>
+        <span class="text-[11px] font-bold text-red-300">Lock PC</span>
+      </button>
+
+    </footer>
+
+  </div>
+
+  <!-- SCRIPT: WebSockets, Clock, Weather, Anti-Burn-In & WakeLock -->
+  <script>
+    // 1. Digital Clock
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      
+      document.getElementById('clock-display').innerHTML = `${hours}:${minutes}<span class="text-xs md:text-sm font-normal text-cyan-400 ml-1.5" id="clock-seconds">${seconds}</span>`;
+      
+      const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+      document.getElementById('date-display').innerText = now.toLocaleDateString('en-US', options);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. Real-Time Weather via Open-Meteo
+    async function fetchWeather() {
+      try {
+        // Fetch weather for user location
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=28.6139&longitude=77.2090&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m');
+        const data = await res.json();
+        const cur = data.current;
+        
+        document.getElementById('weather-temp').innerText = `${Math.round(cur.temperature_2m)}°C`;
+        document.getElementById('weather-details').innerText = `Humidity: ${cur.relative_humidity_2m}% • Wind: ${Math.round(cur.wind_speed_10m)} km/h`;
+
+        const code = cur.weather_code;
+        let cond = 'Clear Sky';
+        let icon = 'fa-sun';
+        if (code >= 1 && code <= 3) { cond = 'Partly Cloudy'; icon = 'fa-cloud-sun'; }
+        else if (code >= 45 && code <= 48) { cond = 'Foggy'; icon = 'fa-smog'; }
+        else if (code >= 51 && code <= 67) { cond = 'Rainy'; icon = 'fa-cloud-rain'; }
+        else if (code >= 80 && code <= 99) { cond = 'Thunderstorm'; icon = 'fa-bolt'; }
+        
+        document.getElementById('weather-cond').innerText = cond;
+        document.getElementById('weather-icon').className = `fa-solid ${icon} text-2xl text-amber-400`;
+      } catch (e) {
+        document.getElementById('weather-cond').innerText = 'Online';
+      }
+    }
+    fetchWeather();
+    setInterval(fetchWeather, 900000); // 15 mins
+
+    // 3. WebSockets Telemetry Client
+    let ws;
+    function connectWS() {
+      const loc = window.location;
+      const wsUrl = (loc.protocol === 'https:' ? 'wss://' : 'ws://') + loc.host + '/ws';
+      ws = new WebSocket(wsUrl);
+
+      ws.onmessage = function(event) {
+        const d = JSON.parse(event.data);
+        
+        // CPU
+        document.getElementById('cpu-usage').innerText = `${Math.round(d.cpu.overall)}%`;
+        document.getElementById('cpu-bar').style.width = `${Math.min(d.cpu.overall, 100)}%`;
+        document.getElementById('cpu-temp').innerText = `${d.cpu.temp}°C`;
+        document.getElementById('cpu-freq').innerText = `${d.cpu.freq_ghz} GHz`;
+
+        // GPU
+        document.getElementById('gpu-usage').innerText = `${d.gpu.load}%`;
+        document.getElementById('gpu-bar').style.width = `${Math.min(d.gpu.load, 100)}%`;
+        document.getElementById('gpu-temp').innerText = `${d.gpu.temp}°C`;
+        document.getElementById('gpu-vram').innerText = `${(d.gpu.mem_used / 1024).toFixed(1)}/${(d.gpu.mem_total / 1024).toFixed(0)} GB`;
+        document.getElementById('gpu-power').innerText = `${d.gpu.power_w} W`;
+
+        // RAM
+        document.getElementById('ram-usage').innerText = `${Math.round(d.ram.percent)}%`;
+        document.getElementById('ram-bar').style.width = `${Math.min(d.ram.percent, 100)}%`;
+        document.getElementById('ram-used').innerText = `${d.ram.used_gb}/${d.ram.total_gb} GB`;
+
+        // Network
+        let downStr = d.network.rx_kbps > 1024 ? `${d.network.rx_mbps} MB/s` : `${d.network.rx_kbps} KB/s`;
+        let upStr = d.network.tx_kbps > 1024 ? `${d.network.tx_mbps} MB/s` : `${d.network.tx_kbps} KB/s`;
+        document.getElementById('net-down').innerText = downStr;
+        document.getElementById('net-up').innerText = upStr;
+
+        // Mic Status
+        if (d.controls) {
+          const micMuted = d.controls.mic_muted;
+          const micIcon = document.getElementById('icon-mic');
+          const micLabel = document.getElementById('label-mic');
+          if (micMuted) {
+            micIcon.className = 'fa-solid fa-microphone-slash text-red-500 text-lg';
+            micLabel.innerText = 'Mic Muted';
+            micLabel.className = 'text-[11px] font-bold text-red-400';
+          } else {
+            micIcon.className = 'fa-solid fa-microphone text-emerald-400 text-lg';
+            micLabel.innerText = 'Mic Active';
+            micLabel.className = 'text-[11px] font-bold text-zinc-300';
+          }
+        }
+
+        // Homelab Sentinel
+        if (d.homelab) {
+          let html = '';
+          d.homelab.forEach(node => {
+            const badgeColor = node.online ? 'bg-emerald-950 text-emerald-300 border-emerald-800/60' : 'bg-red-950 text-red-300 border-red-800/60';
+            const dotColor = node.online ? 'bg-emerald-400' : 'bg-red-500';
+            html += `<span class="px-2.5 py-1 rounded-xl border ${badgeColor} flex items-center gap-1.5 whitespace-nowrap">
+              <span class="w-1.5 h-1.5 rounded-full ${dotColor} animate-pulse"></span>
+              ${node.name}
+            </span>`;
+          });
+          document.getElementById('homelab-nodes').innerHTML = html;
+        }
+      };
+
+      ws.onclose = function() {
+        setTimeout(connectWS, 2000);
+      };
+    }
+    connectWS();
+
+    // 4. Remote PC Actions
+    async function triggerAction(name) {
+      try {
+        await fetch(`/api/action/${name}`, { method: 'POST' });
+      } catch (e) {
+        console.error('Action error', e);
+      }
+    }
+
+    // 5. Screen WakeLock API (Keeps phone awake on stand)
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {
+        console.log('WakeLock:', err);
+      }
+    }
+    requestWakeLock();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') requestWakeLock();
+    });
+
+    // 6. Anti-Burn-In Pixel Shifter (every 60s)
+    let shiftIndex = 0;
+    const shiftOffsets = [
+      { x: 0, y: 0 },
+      { x: 2, y: 1 },
+      { x: -1, y: 2 },
+      { x: 1, y: -1 },
+      { x: -2, y: 0 },
+      { x: 0, y: -2 }
+    ];
+    setInterval(() => {
+      shiftIndex = (shiftIndex + 1) % shiftOffsets.length;
+      const offset = shiftOffsets[shiftIndex];
+      document.getElementById('burn-in-container').style.transform = `translate(${offset.x}px, ${offset.y}px)`;
+    }, 60000);
+
+    // 7. Fullscreen & Night Mode Toggles
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function toggleNightMode() {
+      document.body.classList.toggle('night-mode');
+    }
+  </script>
+</body>
+</html>
