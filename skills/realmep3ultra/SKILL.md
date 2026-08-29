@@ -219,3 +219,20 @@ Mounts phone internal storage (`/sdcard`) natively on Fedora via Termux OpenSSH 
 ```
 * Mount point: `~/phone_storage`
 * Access: Full native file manager drag-and-drop, 4K media playback, and zero-friction backup.
+
+---
+
+## ⚡ 10. Ultra-Snappy Animation & Touch Response Profile
+Cuts window, transition, and dialog latency in half while preserving 120Hz fluid motion:
+```bash
+# 1. 0.5x Fast Animation Scaling
+adb shell "settings put global window_animation_scale 0.5"
+adb shell "settings put global transition_animation_scale 0.5"
+adb shell "settings put global animator_duration_scale 0.5"
+
+# 2. Touch & Gesture Latency Reduction
+adb shell "settings put secure long_press_timeout 250"
+adb shell "settings put secure multi_press_timeout 180"
+adb shell "settings put system orientation_animation 0"
+adb shell "settings put global enable_back_animation 1"
+```
