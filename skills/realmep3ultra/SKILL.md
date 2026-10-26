@@ -16,16 +16,30 @@ Comprehensive operational playbook and hardware profile for interacting with, de
 * **OS / Build:** Android 15 (SDK 35) / Realme UI 6.0 (`RMX5030_15.0.0.530(EX01)`)
 * **RAM / Storage:** LPDDR5X RAM + UFS 4.0 Storage
 * **Display:** 120Hz AMOLED (Hardware locked via SQLite settings)
-* **Default Network Subnet:** `192.168.29.0/24` (Typical IPs: `192.168.29.67` or `192.168.29.66` on port `5555`)
+* **Default Network Subnet:** `192.168.29.0/24` (Typical IPs: `192.168.29.133`, `192.168.29.67`, `192.168.29.66` on port `5555`)
 
 ---
 
 ## 🔌 1. Wireless ADB Connection & Auto-Discovery
 
-### Quick Connect (Known IPs)
+### Quick Connect (1-Click Alias)
 ```bash
-adb connect 192.168.29.67:5555 || adb connect 192.168.29.66:5555
+adbphone # or ~/connect_phone_adb.sh
+# or directly:
+adb connect 192.168.29.133:5555 || adb connect 192.168.29.67:5555 || adb connect 192.168.29.66:5555
 adb devices -l
+```
+
+### Permanent Auth & Wireless Debug Stability
+```bash
+# Disable authorization timeout permanently (never expire host RSA key):
+adb shell "settings put global adb_allowed_connection_time 0"
+
+# Prevent Wi-Fi drops from turning off ADB:
+adb shell "settings put global adb_disconnect_on_wifi_network_lost 0"
+adb shell "settings put global adb_wifi_enabled 1"
+adb shell "settings put global adb_enabled 1"
+adb shell "settings put global development_settings_enabled 1"
 ```
 
 ### Auto-Discovery Script (If IP changes due to DHCP/Band roaming)
@@ -236,3 +250,56 @@ adb shell "settings put secure multi_press_timeout 180"
 adb shell "settings put system orientation_animation 0"
 adb shell "settings put global enable_back_animation 1"
 ```
+
+
+---
+
+## 🔋 11. Battery Optimization, Hybrid 120Hz & Sensor Drain Eradication
+
+### Hybrid 120Hz Power Save Lock (Permanent Endurance Profile)
+Maintains full Power Saving Mode background limits while forcing 120Hz display smoothness:
+```bash
+# 1. Uncap 60Hz limit in Power Save
+adb shell "settings put system power_save_screen_refresh_rate 0"
+adb shell "settings put system power_save_auto_close_switch 0"
+
+# 2. Lock Power Saver permanently ON
+adb shell "settings put global low_power 1"
+adb shell "settings put global low_power_sticky 1"
+
+# 3. Lock 120Hz High Profile
+adb shell "settings put secure oplus_customize_screen_refresh_rate 3"
+adb shell "settings put secure oplus_refreshrate_override 1"
+adb shell "settings put system peak_refresh_rate 120.0"
+adb shell "settings put system user_refresh_rate 120"
+```
+
+### Eliminate High-Performance Mode Drain & RF Scanners
+```bash
+# Disable High Performance Mode (restores low CPU clock states)
+adb shell "settings put global oplus_high_performance_mode 0"
+adb shell "settings put system high_performance_mode_on 0"
+
+# Disable background Wi-Fi AP scanning and Print Spooler broadcasts
+adb shell "settings put global wifi_scan_always_enabled 0"
+adb shell "pm disable-user --user 0 com.google.android.printservice.recommendation"
+
+# Enable Smart 5G Power-Saving release & Sleep Standby
+adb shell 'settings put global smart_5g 1'
+adb shell 'settings put global oplus.radio.smart5g_local_release "ver_num=2;enable=true;screen_off=true;count_per_hour=100;local_release_timer=10;local_release_cnt=20;nonDDS_local_release_enable=true"'
+adb shell "settings put system oplus_deep_sleep_status 1"
+adb shell "settings put system deepsleep_network_disable_state 1"
+```
+
+### Prevent Rogue Launcher Sensor Drains (Smart Launcher 6 Postmortem)
+Smart Launcher 6 kept hardware gyroscope/motion sensors awake for **20.8 hours (5,932 mAh drain)**. Keep secondary launchers frozen in Hail when using stock `com.android.launcher`:
+```bash
+adb shell "cmd package suspend --user 0 ginlemon.flowerfree"
+```
+
+### ReVanced YouTube Playback & Infinite Buffering Rule
+* If ReVanced YouTube (`app.revanced.android.youtube`) exhibits infinite buffering or loads for only 10–60 seconds:
+  1. Go to *Settings $\rightarrow$ ReVanced $\rightarrow$ Player / Miscellaneous*.
+  2. Toggle **Spoof video streams** OFF if native modern build (v20.40+) passes SABR checks directly.
+  3. If required, switch default client to `VisionOS` or `Android VR`.
+  4. Ensure both YouTube and GmsCore are whitelisted in Doze (`dumpsys deviceidle whitelist +app.revanced.android.youtube`).

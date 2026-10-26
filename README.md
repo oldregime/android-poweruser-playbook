@@ -127,6 +127,18 @@ Display:          120Hz IPS LCD (Dynamic Throttling Eliminated)
 
 ---
 
+### 10. 🔋 Hybrid 120Hz Endurance Mode & Rogue Sensor Drain Eradication
+* **The Problem:** ColorOS forces 60Hz whenever Battery Saver is active. Furthermore, unmonitored secondary launchers (e.g. Smart Launcher 6) can leak background gyroscope and accelerometer polling for 20+ hours (burning 5,900+ mAh), while High Performance Mode pins CPU clock gates high.
+* **The Solution:**
+  * Enabled **Hybrid 120Hz Power Save**: Bypasses the 60Hz cap via `power_save_screen_refresh_rate=0` while locking Power Saver `low_power=1` and `low_power_sticky=1`.
+  * Disabled High Performance Mode (`oplus_high_performance_mode=0`).
+  * Neutralized background Wi-Fi and Bluetooth beacon scanners (`wifi_scan_always_enabled=0`).
+  * Suspended zombie launchers and restricted background cycles on heavy shopping/delivery apps.
+  * 1-Click execution script: `scripts/realme_p3_ultra_battery_lock.sh`.
+* **Detailed Guide:** [docs/BATTERY_AND_DOZE_TUNING.md](docs/BATTERY_AND_DOZE_TUNING.md).
+
+---
+
 ## 💳 UPI / Banking App Developer Options Guide
 
 NPCI and Indian banking applications (PhonePe, GPay, Paytm, BHIM, Cred, SBI YONO) detect `development_settings_enabled = 1`.
